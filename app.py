@@ -10,79 +10,103 @@ from deep_translator import GoogleTranslator
 # ==========================================
 st.set_page_config(page_title="VocabMaster", layout="centered")
 
-# CSS Kustom untuk Tampilan Humanize yang Lebih Bersih & Bulat
+# CSS Kustom: Premium Dark Mode & Modern Font
 st.markdown("""
 <style>
-    /* Mengubah font dasar Streamlit menjadi lebih clean */
-    html, body, [class*="css"]  {
-        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #1F2937;
+    /* Mengambil Font Modern dari Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
+
+    /* Terapkan font ke seluruh aplikasi */
+    html, body, [class*="css"], .stMarkdown p, h1, h2, h3, h4, h5, h6, label {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* Styling tombol utama (Primary) */
-    .stButton>button[kind="primary"] {
-        background-color: #4F46E5;
-        color: white;
-        border: none;
-        border-radius: 12px; /* Lebih bulat, lebih humanize */
-        height: 50px;
-        font-weight: 600;
-        font-size: 16px;
-        letter-spacing: 0.3px;
-        transition: background-color 0.2s;
+    /* === MENGHILANGKAN WARNA UNGU/MERAH BAWAAN STREAMLIT === */
+    /* Ini yang bikin kotak teks dan tombol jadi aneh saat diklik */
+    *:focus {
+        outline: none !important;
     }
-    .stButton>button[kind="primary"]:hover {
-        background-color: #4338CA;
+    div[data-baseweb="input"]:focus-within, 
+    div[data-baseweb="textarea"]:focus-within {
+        border-color: #14B8A6 !important; /* Warna Teal Modern */
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2) !important;
     }
 
-    /* Styling tombol sekunder (Secondary) */
-    .stButton>button[kind="secondary"] {
-        background-color: #FFFFFF;
-        color: #4F46E5;
-        border: 1px solid #E5E7EB;
-        border-radius: 12px;
-        height: 50px;
-        font-weight: 500;
-        font-size: 16px;
-        transition: all 0.2s;
-    }
-    .stButton>button[kind="secondary"]:hover {
-        border-color: #4F46E5;
-        background-color: #F9FAFB;
-    }
-
-    /* === Perbaikan Masalah Sudut Bulat (Rounded Corners) === */
-    /* Menargetkan container luar input teks agar bulat */
+    /* === KOTAK INPUT TEKS === */
     .stTextArea > div {
-        border-radius: 16px !important; /* Membuat container bulat */
-        overflow: hidden !important; /* Memastikan isinya ikut bulat */
+        border-radius: 16px !important;
+        background-color: transparent !important;
     }
-    /* Menargetkan kotak textarea dalam agar sudutnya bulat */
     .stTextArea textarea {
         border-radius: 16px !important; 
-        border: 1px solid #E5E7EB !important;
+        border: 1px solid #333333 !important; /* Abu-abu gelap */
+        background-color: #121212 !important; /* Hitam */
+        color: #FFFFFF !important;
         font-size: 15px;
-        padding: 15px;
+        padding: 16px;
+        transition: all 0.2s ease;
     }
+    /* Warna saat kotak teks sedang diketik */
     .stTextArea textarea:focus {
-        border-color: #4F46E5 !important;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+        border-color: #14B8A6 !important;
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2) !important;
     }
 
-    /* Label Input */
+    /* Label Input Teks */
     .stTextArea label {
-        font-weight: 600;
-        color: #374151;
-        font-size: 17px;
-        margin-bottom: 10px;
+        font-weight: 600 !important;
+        color: #A3A3A3 !important; /* Abu-abu terang agar terbaca di dark mode */
+        font-size: 16px !important;
+        margin-bottom: 8px !important;
     }
 
-    /* --- Styling Kartu Flashcard --- */
+    /* === TOMBOL === */
+    /* Tombol Utama (Primary) - Warna Teal */
+    .stButton>button[kind="primary"] {
+        background-color: #14B8A6 !important;
+        color: #000000 !important; /* Teks hitam agar kontras dengan background Teal */
+        border: none !important;
+        border-radius: 14px !important;
+        height: 52px;
+        font-weight: 700 !important;
+        font-size: 16px;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15) !important;
+    }
+    .stButton>button[kind="primary"]:hover {
+        background-color: #0D9488 !important; /* Teal lebih gelap saat di-hover */
+        transform: translateY(-2px);
+    }
+
+    /* Tombol Sekunder (Secondary) - Warna Hitam/Abu-abu */
+    .stButton>button[kind="secondary"] {
+        background-color: #1A1A1A !important;
+        color: #FFFFFF !important;
+        border: 1px solid #333333 !important;
+        border-radius: 14px !important;
+        height: 52px;
+        font-weight: 600 !important;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+    .stButton>button[kind="secondary"]:hover {
+        border-color: #14B8A6 !important;
+        color: #14B8A6 !important;
+    }
+
+    /* Fokus pada tombol agar tidak jadi pink/ungu */
+    .stButton>button:focus {
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.4) !important;
+        border-color: #14B8A6 !important;
+        color: #14B8A6 !important;
+    }
+
+    /* === KARTU FLASHCARD HITAM === */
     .vocab-card {
         padding: 40px 25px;
-        border-radius: 20px; /* Lebih bulat */
+        border-radius: 24px; 
         text-align: center;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.06); 
         margin: 25px 0;
         min-height: 290px;
         display: flex;
@@ -91,75 +115,73 @@ st.markdown("""
         align-items: center;
     }
 
-    /* Kartu Depan (Putih Bersih) */
+    /* Kartu Depan (Hitam Pekat) */
     .card-front {
-        background-color: #FFFFFF;
-        color: #1F2937;
-        border: 1px solid #F3F4F6;
+        background-color: #121212;
+        border: 1px solid #2A2A2A;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
     }
     .word-title { 
-        font-size: 40px; 
-        font-weight: 700; 
-        margin-bottom: 10px; 
+        font-size: 42px; 
+        font-weight: 800; 
+        margin-bottom: 8px; 
         text-transform: capitalize; 
         letter-spacing: -1px;
+        color: #FFFFFF;
     }
     .word-phonetic { 
         font-size: 17px; 
-        color: #6B7280; 
-        font-weight: 400;
+        color: #14B8A6; /* Aksen Teal di tulisan fonetik */
+        font-weight: 500;
+        letter-spacing: 1px;
     }
 
-    /* Kartu Belakang (Indigo Solid) */
+    /* Kartu Belakang (Hitam dengan Garis Teal) */
     .card-back {
-        background-color: #4F46E5;
-        color: #FFFFFF;
+        background-color: #0A0A0A; /* Hitam yang sedikit berbeda */
+        border: 1px solid #14B8A6; /* Garis aksen Teal */
+        box-shadow: 0 8px 32px rgba(20, 184, 166, 0.08);
     }
     .word-label { 
-        font-size: 13px; 
-        opacity: 0.7; 
-        letter-spacing: 1px; 
+        font-size: 12px; 
+        color: #737373; 
+        font-weight: 700;
+        letter-spacing: 2px; 
         margin-bottom: 25px; 
         text-transform: uppercase;
     }
     .word-meaning { 
-        font-size: 21px; 
-        font-weight: 500; 
+        font-size: 22px; 
+        font-weight: 600; 
         margin-bottom: 20px; 
         line-height: 1.5;
+        color: #FFFFFF;
     }
     .word-example { 
-        font-size: 16px; 
+        font-size: 15px; 
         font-style: italic; 
-        color: #E0E7FF; 
+        color: #A3A3A3; 
         max-width: 90%;
-        line-height: 1.4;
+        line-height: 1.5;
     }
 
-    /* === Perbaikan Styling Pesan Status (Peringatan/Error) === */
-    /* Memastikan pesan status memiliki padding dan sudut bulat */
-    .stAlert {
-        border-radius: 12px;
-        padding: 15px;
-        margin-top: 15px; /* Menambah jarak vertikal di bawah tombol */
-    }
-
-    /* Styling Indikator Progres */
+    /* === LAIN-LAIN === */
+    /* Progress Bar */
     .stProgress > div > div > div > div {
-        background-color: #4F46E5;
+        background-color: #14B8A6 !important;
         border-radius: 10px;
     }
-
-    /* Styling Judul Halaman */
-    h1 {
-        font-weight: 800;
-        letter-spacing: -1.5px;
-        font-size: 2.3rem;
+    /* Peringatan & Status */
+    .stAlert {
+        border-radius: 12px;
+        background-color: #1A1A1A !important;
+        border: 1px solid #333333 !important;
+        color: #FFFFFF !important;
     }
-    h2 {
-        font-weight: 700;
-        font-size: 1.6rem;
-    }
+    /* Memastikan teks biasa terlihat cerah di dark mode */
+    h1 { font-weight: 800; letter-spacing: -1.5px; color: #FFFFFF; }
+    h2, h3 { font-weight: 700; color: #FFFFFF; }
+    p { color: #D4D4D4; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -222,14 +244,13 @@ def change_state(new_state):
 # ==========================================
 if st.session_state.app_state == 'input':
     st.title("VocabMaster")
-    st.write("Ubah teks bahasa Inggris menjadi kartu belajar sederhana.")
+    st.write("Ubah teks bahasa Inggris menjadi kartu belajar modern.")
     st.write("")
     
-    # Input Area dengan Spasi yang Lebih Lega
     text_input = st.text_area("Masukkan Teks Bahasa Inggris", height=200, 
                               placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini...")
     
-    st.write("") # Whitespace tambahan di atas tombol
+    st.write("")
 
     if st.button("Buat Kartu Belajar", type="primary"):
         if not text_input.strip():
@@ -263,7 +284,6 @@ elif st.session_state.app_state == 'study':
     
     st.write("")
     st.progress((current_idx + 1) / len(words))
-    # Area Spasi yang Lebih Lega
     st.write("") 
     st.caption(f"Kartu {current_idx + 1} dari {len(words)}")
     
@@ -278,7 +298,7 @@ elif st.session_state.app_state == 'study':
         example_text = f'"{current_word["example"]}"' if current_word["example"] else ""
         st.markdown(f"""
         <div class="vocab-card card-back">
-            <div class="word-label">ARTI</div>
+            <div class="word-label">ARTI KATA</div>
             <div class="word-meaning">{current_word['definition_id']}</div>
             <div class="word-example">{example_text}</div>
         </div>
@@ -307,9 +327,9 @@ elif st.session_state.app_state == 'study':
     st.write("")
     st.divider()
     st.subheader("Uji Kemampuan")
-    st.write("Jika sudah merasa siap, coba kuis singkat berdasarkan kartu yang Anda pelajari.")
+    st.write("Coba kuis singkat berdasarkan kartu yang Anda pelajari.")
     st.write("")
-    if st.button("Mulai Kuis Sekarang", type="primary"):
+    if st.button("Mulai Kuis", type="primary"):
         st.session_state.quiz_idx = 0
         st.session_state.quiz_score = 0
         random.shuffle(st.session_state.words_data)
@@ -369,7 +389,6 @@ elif st.session_state.app_state == 'result':
     total = len(st.session_state.words_data)
     score = st.session_state.quiz_score
     
-    st.snow()
     st.title("Hasil Kuis")
     st.write("")
     
