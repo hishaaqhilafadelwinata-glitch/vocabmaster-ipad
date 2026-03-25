@@ -10,24 +10,24 @@ from deep_translator import GoogleTranslator
 # ==========================================
 st.set_page_config(page_title="VocabMaster", layout="centered")
 
-# CSS Kustom untuk Tampilan yang Lebih Humanize & Bersih
+# CSS Kustom untuk Tampilan Humanize yang Lebih Bersih & Bulat
 st.markdown("""
 <style>
     /* Mengubah font dasar Streamlit menjadi lebih clean */
     html, body, [class*="css"]  {
         font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #1F2937; /* Charcoal gelap, lebih nyaman di mata dibanding hitam pekat */
+        color: #1F2937;
     }
 
     /* Styling tombol utama (Primary) */
     .stButton>button[kind="primary"] {
-        background-color: #4F46E5; /* Indigo hangat */
+        background-color: #4F46E5;
         color: white;
         border: none;
-        border-radius: 8px; /* Sedikit melengkung, tidak terlalu kotak/bulat */
-        height: 48px;
+        border-radius: 12px; /* Lebih bulat, lebih humanize */
+        height: 50px;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 16px;
         letter-spacing: 0.3px;
         transition: background-color 0.2s;
     }
@@ -40,10 +40,10 @@ st.markdown("""
         background-color: #FFFFFF;
         color: #4F46E5;
         border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        height: 48px;
+        border-radius: 12px;
+        height: 50px;
         font-weight: 500;
-        font-size: 15px;
+        font-size: 16px;
         transition: all 0.2s;
     }
     .stButton>button[kind="secondary"]:hover {
@@ -51,35 +51,40 @@ st.markdown("""
         background-color: #F9FAFB;
     }
 
-    /* Styling Kotak Input Teks */
-    .stTextArea>div>div>textarea {
-        border-radius: 8px;
-        border-color: #E5E7EB;
-        font-size: 15px;
-        padding: 12px;
+    /* === Perbaikan Masalah Sudut Bulat (Rounded Corners) === */
+    /* Menargetkan container luar input teks agar bulat */
+    .stTextArea > div {
+        border-radius: 16px !important; /* Membuat container bulat */
+        overflow: hidden !important; /* Memastikan isinya ikut bulat */
     }
-    .stTextArea>div>div>textarea:focus {
-        border-color: #4F46E5;
-        box-shadow: 0 0 0 1px #4F46E5;
+    /* Menargetkan kotak textarea dalam agar sudutnya bulat */
+    .stTextArea textarea {
+        border-radius: 16px !important; 
+        border: 1px solid #E5E7EB !important;
+        font-size: 15px;
+        padding: 15px;
+    }
+    .stTextArea textarea:focus {
+        border-color: #4F46E5 !important;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
     }
 
     /* Label Input */
     .stTextArea label {
         font-weight: 600;
         color: #374151;
-        font-size: 16px;
-        margin-bottom: 8px;
+        font-size: 17px;
+        margin-bottom: 10px;
     }
 
     /* --- Styling Kartu Flashcard --- */
-    /* Container dasar kartu */
     .vocab-card {
         padding: 40px 25px;
-        border-radius: 16px;
+        border-radius: 20px; /* Lebih bulat */
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Bayangan sangat tipis, organik */
-        margin: 20px 0;
-        min-height: 280px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.06); 
+        margin: 25px 0;
+        min-height: 290px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -93,15 +98,15 @@ st.markdown("""
         border: 1px solid #F3F4F6;
     }
     .word-title { 
-        font-size: 38px; 
+        font-size: 40px; 
         font-weight: 700; 
-        margin-bottom: 8px; 
+        margin-bottom: 10px; 
         text-transform: capitalize; 
         letter-spacing: -1px;
     }
     .word-phonetic { 
-        font-size: 16px; 
-        color: #6B7280; /* Muted gray */
+        font-size: 17px; 
+        color: #6B7280; 
         font-weight: 400;
     }
 
@@ -111,46 +116,49 @@ st.markdown("""
         color: #FFFFFF;
     }
     .word-label { 
-        font-size: 12px; 
+        font-size: 13px; 
         opacity: 0.7; 
         letter-spacing: 1px; 
         margin-bottom: 25px; 
         text-transform: uppercase;
     }
     .word-meaning { 
-        font-size: 20px; 
+        font-size: 21px; 
         font-weight: 500; 
         margin-bottom: 20px; 
         line-height: 1.5;
     }
     .word-example { 
-        font-size: 15px; 
+        font-size: 16px; 
         font-style: italic; 
-        color: #E0E7FF; /* Light indigo text */
+        color: #E0E7FF; 
         max-width: 90%;
         line-height: 1.4;
     }
 
-    /* Indikator Progres */
+    /* === Perbaikan Styling Pesan Status (Peringatan/Error) === */
+    /* Memastikan pesan status memiliki padding dan sudut bulat */
+    .stAlert {
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 15px; /* Menambah jarak vertikal di bawah tombol */
+    }
+
+    /* Styling Indikator Progres */
     .stProgress > div > div > div > div {
         background-color: #4F46E5;
-    }
-    div[data-testid="stMarkdownContainer"] p {
-        font-size: 14px;
-        color: #6B7280;
+        border-radius: 10px;
     }
 
     /* Styling Judul Halaman */
     h1 {
         font-weight: 800;
         letter-spacing: -1.5px;
-        margin-bottom: 10px;
-        font-size: 2.2rem;
+        font-size: 2.3rem;
     }
     h2 {
         font-weight: 700;
-        font-size: 1.5rem;
-        margin-top: 1.5rem;
+        font-size: 1.6rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -217,10 +225,12 @@ if st.session_state.app_state == 'input':
     st.write("Ubah teks bahasa Inggris menjadi kartu belajar sederhana.")
     st.write("")
     
-    text_input = st.text_area("Masukkan Teks Bahasa Inggris", height=180, 
+    # Input Area dengan Spasi yang Lebih Lega
+    text_input = st.text_area("Masukkan Teks Bahasa Inggris", height=200, 
                               placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini...")
     
-    # Menghapus emoji dan mengubah teks tombol agar lebih bersih
+    st.write("") # Whitespace tambahan di atas tombol
+
     if st.button("Buat Kartu Belajar", type="primary"):
         if not text_input.strip():
             st.warning("Silakan masukkan teks terlebih dahulu.")
@@ -233,7 +243,7 @@ if st.session_state.app_state == 'input':
                     word_data_list = []
                     for w in words:
                         word_data_list.append(fetch_definition(w))
-                        time.sleep(0.05) # Jeda sangat singkat
+                        time.sleep(0.05)
                     
                     st.session_state.words_data = word_data_list
                     st.session_state.card_idx = 0
@@ -245,19 +255,18 @@ if st.session_state.app_state == 'input':
 # LAYAR 2: BELAJAR (FLASHCARD)
 # ==========================================
 elif st.session_state.app_state == 'study':
-    # Menghapus ikon panah, menggunakan teks bersahaja
     st.button("Kembali ke Beranda", type="secondary", on_click=change_state, args=('input',))
     
     words = st.session_state.words_data
     current_idx = st.session_state.card_idx
     current_word = words[current_idx]
     
-    # Progress bar tanpa emoji, ukuran teks lebih kecil
     st.write("")
     st.progress((current_idx + 1) / len(words))
+    # Area Spasi yang Lebih Lega
+    st.write("") 
     st.caption(f"Kartu {current_idx + 1} dari {len(words)}")
     
-    # Render Kartu yang Sudah Disederhanakan
     if not st.session_state.is_flipped:
         st.markdown(f"""
         <div class="vocab-card card-front">
@@ -266,7 +275,6 @@ elif st.session_state.app_state == 'study':
         </div>
         """, unsafe_allow_html=True)
     else:
-        # Menghapus emoji, menyederhanakan teks label
         example_text = f'"{current_word["example"]}"' if current_word["example"] else ""
         st.markdown(f"""
         <div class="vocab-card card-back">
@@ -276,7 +284,6 @@ elif st.session_state.app_state == 'study':
         </div>
         """, unsafe_allow_html=True)
 
-    # Tombol Kontrol (Gunakan type="secondary" untuk Mundur/Maju agar visual tidak berat)
     col_back, col_flip, col_next = st.columns([1, 2, 1])
     
     with col_back:
@@ -296,12 +303,12 @@ elif st.session_state.app_state == 'study':
             st.session_state.is_flipped = False
             st.rerun()
             
-    # Area Mulai Kuis yang Lebih Bersih
     st.write("")
     st.write("")
     st.divider()
     st.subheader("Uji Kemampuan")
     st.write("Jika sudah merasa siap, coba kuis singkat berdasarkan kartu yang Anda pelajari.")
+    st.write("")
     if st.button("Mulai Kuis Sekarang", type="primary"):
         st.session_state.quiz_idx = 0
         st.session_state.quiz_score = 0
@@ -322,16 +329,15 @@ elif st.session_state.app_state == 'quiz':
     
     st.write("")
     st.progress((q_idx) / total_q)
+    st.write("")
     st.caption(f"Soal {q_idx + 1} / {total_q}")
     
-    # Pertanyaan Kuis Sederhana
     st.write("")
     st.write("Apa kata bahasa Inggris yang tepat untuk arti ini?")
     st.info(current_q['definition_id'])
     
     if 'quiz_options' not in st.session_state or st.session_state.quiz_idx != st.session_state.get('last_q_idx', -1):
         others = [w['word'] for w in words if w['word'] != current_q['word']]
-        # Mengurangi jumlah pilihan ganda agar tidak pusing
         wrong_choices = random.sample(others, min(1, len(others))) if others else ["unknown"]
         options = [current_q['word']] + wrong_choices
         random.shuffle(options)
@@ -363,20 +369,19 @@ elif st.session_state.app_state == 'result':
     total = len(st.session_state.words_data)
     score = st.session_state.quiz_score
     
-    # Gunakan st.snow() bukan balloons, lebih tenang visualnya
     st.snow()
     st.title("Hasil Kuis")
+    st.write("")
     
     col_s, col_a = st.columns(2)
-    # Menghapus label metrik yang berlebihan
     col_s.metric("Skor", f"{score} / {total}")
     col_a.metric("Akurasi", f"{int((score/total)*100)}%")
     
     st.divider()
     
+    st.write("")
     col_ulang, col_home = st.columns(2)
     with col_ulang:
-        # Menghapus emoji dari tombol
         if st.button("Ulangi Kuis", type="primary"):
             st.session_state.quiz_idx = 0
             st.session_state.quiz_score = 0
