@@ -13,46 +13,39 @@ st.set_page_config(page_title="VocabMaster", layout="centered")
 # CSS Kustom: Modern Light Mode & Modern Font
 st.markdown("""
 <style>
-    /* Mengambil Font Modern dari Google Fonts (Plus Jakarta Sans) */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
 
-    /* Terapkan font ke seluruh aplikasi */
     html, body, [class*="css"], .stMarkdown p, h1, h2, h3, h4, h5, h6, label {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
-        color: #1F2937; /* Charcoal gelap, lebih humanize dibanding hitam pekat */
+        color: #1F2937; 
     }
 
-    /* === MENGHILANGKAN WARNA UNGU/PINK BAWAAN STREAMLIT === */
     *:focus {
         outline: none !important;
     }
     div[data-baseweb="input"]:focus-within, 
     div[data-baseweb="textarea"]:focus-within {
-        border-color: #14B8A6 !important; /* Warna Teal Modern */
+        border-color: #14B8A6 !important; 
         box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1) !important;
     }
 
-    /* === KOTAK INPUT TEKS (LIGHT MODE) === */
     .stTextArea > div {
         border-radius: 16px !important;
         background-color: transparent !important;
     }
     .stTextArea textarea {
         border-radius: 16px !important; 
-        border: 1px solid #E5E7EB !important; /* Abu-abu muda */
-        background-color: #FFFFFF !important; /* Putih */
+        border: 1px solid #E5E7EB !important; 
+        background-color: #FFFFFF !important; 
         color: #1F2937 !important;
         font-size: 15px;
         padding: 16px;
         transition: all 0.2s ease;
     }
-    /* Warna saat kotak teks sedang diketik */
     .stTextArea textarea:focus {
         border-color: #14B8A6 !important;
         box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1) !important;
     }
-
-    /* Label Input Teks */
     .stTextArea label {
         font-weight: 600 !important;
         color: #374151 !important; 
@@ -60,26 +53,22 @@ st.markdown("""
         margin-bottom: 8px !important;
     }
 
-    /* === TOMBOL (LIGHT MODE) === */
-    /* Tombol Utama (Primary) - Warna Teal Solid */
     .stButton>button[kind="primary"] {
         background-color: #14B8A6 !important;
-        color: #FFFFFF !important; /* Teks putih agar kontras dengan Teal */
+        color: #FFFFFF !important; 
         border: none !important;
         border-radius: 14px !important;
         height: 52px;
         font-weight: 700 !important;
         font-size: 16px;
-        letter-spacing: 0.3px;
         transition: all 0.2s ease;
         box-shadow: 0 3px 8px rgba(20, 184, 166, 0.1) !important;
     }
     .stButton>button[kind="primary"]:hover {
-        background-color: #0D9488 !important; /* Teal lebih gelap saat di-hover */
+        background-color: #0D9488 !important; 
         transform: translateY(-2px);
     }
 
-    /* Tombol Sekunder (Secondary) - Warna Putih/Abu-abu Bersih */
     .stButton>button[kind="secondary"] {
         background-color: #FFFFFF !important;
         color: #1F2937 !important;
@@ -93,16 +82,29 @@ st.markdown("""
     .stButton>button[kind="secondary"]:hover {
         border-color: #14B8A6 !important;
         color: #14B8A6 !important;
-        background-color: #F9FAFB !important; /* Abu-abu sangat muda */
+        background-color: #F9FAFB !important; 
     }
-
-    /* Fokus pada tombol agar tidak jadi pink/ungu */
     .stButton>button:focus {
         box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3) !important;
         border-color: #14B8A6 !important;
     }
 
-    /* === KARTU FLASHCARD PUTIH (LIGHT MODE) === */
+    /* CSS Khusus untuk tombol riwayat agar lebih kecil */
+    .history-btn button {
+        height: 40px !important;
+        font-size: 14px !important;
+        border-radius: 10px !important;
+        margin-bottom: 5px !important;
+        background-color: #F3F4F6 !important;
+        color: #4B5563 !important;
+        border: 1px dashed #D1D5DB !important;
+    }
+    .history-btn button:hover {
+        border-color: #14B8A6 !important;
+        color: #14B8A6 !important;
+        background-color: #F0FDFA !important;
+    }
+
     .vocab-card {
         padding: 40px 25px;
         border-radius: 24px; 
@@ -115,36 +117,33 @@ st.markdown("""
         align-items: center;
     }
 
-    /* Kartu Depan (Putih Bersih dengan Shadow Halus) */
     .card-front {
         background-color: #FFFFFF;
         border: 1px solid #F3F4F6;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.03); /* Bayangan sangat tipis agar terlihat premium */
+        box-shadow: 0 8px 24px rgba(0,0,0,0.03); 
     }
     .word-title { 
         font-size: 42px; 
         font-weight: 800; 
         margin-bottom: 8px; 
         text-transform: capitalize; 
-        letter-spacing: -1px;
         color: #1F2937;
     }
     .word-phonetic { 
         font-size: 17px; 
-        color: #14B8A6; /* Aksen Teal di tulisan fonetik */
+        color: #14B8A6; 
         font-weight: 500;
         letter-spacing: 1px;
     }
 
-    /* Kartu Belakang (Putih dengan Garis Teal Tipis) */
     .card-back {
         background-color: #FFFFFF; 
-        border: 1px solid #14B8A6; /* Garis aksen Teal mengelilingi kartu */
+        border: 1px solid #14B8A6; 
         box-shadow: 0 8px 32px rgba(20, 184, 166, 0.05);
     }
     .word-label { 
         font-size: 12px; 
-        color: #6B7280; /* Abu-abu muted */
+        color: #6B7280; 
         font-weight: 700;
         letter-spacing: 2px; 
         margin-bottom: 25px; 
@@ -160,25 +159,21 @@ st.markdown("""
     .word-example { 
         font-size: 15px; 
         font-style: italic; 
-        color: #4B5563; /* Abu-abu sedikit lebih gelap */
+        color: #4B5563; 
         max-width: 90%;
         line-height: 1.5;
     }
 
-    /* === LAIN-LAIN === */
-    /* Progress Bar */
     .stProgress > div > div > div > div {
         background-color: #14B8A6 !important;
         border-radius: 10px;
     }
-    /* Peringatan & Status (Lebih Humanize) */
     .stAlert {
         border-radius: 12px;
         background-color: #F9FAFB !important;
         border: 1px solid #E5E7EB !important;
         color: #1F2937 !important;
     }
-    /* Memastikan teks biasa terlihat nyaman di light mode */
     h1 { font-weight: 800; letter-spacing: -1.5px; color: #1F2937; }
     h2, h3 { font-weight: 700; color: #1F2937; }
     p { color: #4B5563; }
@@ -200,6 +195,12 @@ if 'quiz_score' not in st.session_state:
     st.session_state.quiz_score = 0
 if 'quiz_idx' not in st.session_state:
     st.session_state.quiz_idx = 0
+
+# --- State Baru untuk Fitur Riwayat Teks ---
+if 'text_history' not in st.session_state:
+    st.session_state.text_history = []
+if 'current_input_text' not in st.session_state:
+    st.session_state.current_input_text = ""
 
 # ==========================================
 # FUNGSI PEMBANTU
@@ -224,7 +225,6 @@ def fetch_definition(word):
                 def_en = d.get("definition", "")
                 result["example"] = d.get("example", "")
                 
-                # Terjemahkan ke Bahasa Indonesia
                 if def_en:
                     try:
                         result["definition_id"] = GoogleTranslator(source='en', target='id').translate(def_en)
@@ -239,6 +239,9 @@ def change_state(new_state):
     if new_state == 'study':
         st.session_state.is_flipped = False
 
+def set_input_from_history(text):
+    st.session_state.current_input_text = text
+
 # ==========================================
 # LAYAR 1: INPUT TEKS
 # ==========================================
@@ -247,9 +250,24 @@ if st.session_state.app_state == 'input':
     st.write("Ubah teks bahasa Inggris menjadi kartu belajar modern.")
     st.write("")
     
-    text_input = st.text_area("Masukkan Teks Bahasa Inggris", height=200, 
-                              placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini...")
+    # Kotak Input yang terhubung dengan state
+    text_input = st.text_area(
+        "Masukkan Teks Bahasa Inggris", 
+        height=200, 
+        value=st.session_state.current_input_text,
+        placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini..."
+    )
     
+    # Menampilkan Riwayat Teks (Jika ada)
+    if st.session_state.text_history:
+        st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color:#6B7280;'>🕒 Riwayat Teks Sesi Ini:</p>", unsafe_allow_html=True)
+        for i, past_text in enumerate(st.session_state.text_history):
+            # Memotong teks agar tidak kepanjangan di tombol
+            preview_text = past_text[:50] + "..." if len(past_text) > 50 else past_text
+            st.markdown('<div class="history-btn">', unsafe_allow_html=True)
+            st.button(f"📄 {preview_text}", key=f"hist_{i}", on_click=set_input_from_history, args=(past_text,))
+            st.markdown('</div>', unsafe_allow_html=True)
+
     st.write("")
 
     if st.button("Buat Kartu Belajar", type="primary"):
@@ -260,6 +278,16 @@ if st.session_state.app_state == 'input':
             if not words:
                 st.error("Tidak ada kata bahasa Inggris yang valid ditemukan (minimal 4 huruf).")
             else:
+                # Simpan teks ke riwayat jika belum ada (hindari duplikat)
+                if text_input.strip() not in st.session_state.text_history:
+                    # Simpan maksimal 5 riwayat terakhir agar tidak penuh
+                    if len(st.session_state.text_history) >= 5:
+                        st.session_state.text_history.pop(0)
+                    st.session_state.text_history.append(text_input.strip())
+                
+                # Simpan input terakhir
+                st.session_state.current_input_text = text_input
+                
                 with st.spinner(f"Menerjemahkan {len(words)} kosakata..."):
                     word_data_list = []
                     for w in words:
