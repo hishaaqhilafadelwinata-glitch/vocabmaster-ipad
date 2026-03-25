@@ -196,11 +196,11 @@ if 'quiz_score' not in st.session_state:
 if 'quiz_idx' not in st.session_state:
     st.session_state.quiz_idx = 0
 
-# --- State Baru untuk Fitur Riwayat Teks ---
 if 'text_history' not in st.session_state:
     st.session_state.text_history = []
-if 'current_input_text' not in st.session_state:
-    st.session_state.current_input_text = ""
+# Inisialisasi KUNCI WIDGET agar tidak error di awal
+if 'input_text_widget' not in st.session_state:
+    st.session_state.input_text_widget = ""
 
 # ==========================================
 # FUNGSI PEMBANTU
@@ -240,7 +240,8 @@ def change_state(new_state):
         st.session_state.is_flipped = False
 
 def set_input_from_history(text):
-    st.session_state.current_input_text = text
+    # KUNCI PERBAIKAN: Memaksa widget kotak teks untuk langsung berubah
+    st.session_state.input_text_widget = text
 
 # ==========================================
 # LAYAR 1: INPUT TEKS
@@ -250,19 +251,17 @@ if st.session_state.app_state == 'input':
     st.write("Ubah teks bahasa Inggris menjadi kartu belajar modern.")
     st.write("")
     
-    # Kotak Input yang terhubung dengan state
+    # Kotak Input sekarang menggunakan 'key' agar bisa dikontrol lewat tombol
     text_input = st.text_area(
         "Masukkan Teks Bahasa Inggris", 
         height=200, 
-        value=st.session_state.current_input_text,
+        key="input_text_widget",
         placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini..."
     )
     
-    # Menampilkan Riwayat Teks (Jika ada)
     if st.session_state.text_history:
         st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color:#6B7280;'>🕒 Riwayat Teks Sesi Ini:</p>", unsafe_allow_html=True)
         for i, past_text in enumerate(st.session_state.text_history):
-            # Memotong teks agar tidak kepanjangan di tombol
             preview_text = past_text[:50] + "..." if len(past_text) > 50 else past_text
             st.markdown('<div class="history-btn">', unsafe_allow_html=True)
             st.button(f"📄 {preview_text}", key=f"hist_{i}", on_click=set_input_from_history, args=(past_text,))
@@ -278,15 +277,10 @@ if st.session_state.app_state == 'input':
             if not words:
                 st.error("Tidak ada kata bahasa Inggris yang valid ditemukan (minimal 4 huruf).")
             else:
-                # Simpan teks ke riwayat jika belum ada (hindari duplikat)
                 if text_input.strip() not in st.session_state.text_history:
-                    # Simpan maksimal 5 riwayat terakhir agar tidak penuh
                     if len(st.session_state.text_history) >= 5:
                         st.session_state.text_history.pop(0)
                     st.session_state.text_history.append(text_input.strip())
-                
-                # Simpan input terakhir
-                st.session_state.current_input_text = text_input
                 
                 with st.spinner(f"Menerjemahkan {len(words)} kosakata..."):
                     word_data_list = []
