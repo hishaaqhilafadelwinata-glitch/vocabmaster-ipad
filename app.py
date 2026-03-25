@@ -10,38 +10,38 @@ from deep_translator import GoogleTranslator
 # ==========================================
 st.set_page_config(page_title="VocabMaster", layout="centered")
 
-# CSS Kustom: Premium Dark Mode & Modern Font
+# CSS Kustom: Modern Light Mode & Modern Font
 st.markdown("""
 <style>
-    /* Mengambil Font Modern dari Google Fonts */
+    /* Mengambil Font Modern dari Google Fonts (Plus Jakarta Sans) */
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
 
     /* Terapkan font ke seluruh aplikasi */
     html, body, [class*="css"], .stMarkdown p, h1, h2, h3, h4, h5, h6, label {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: #1F2937; /* Charcoal gelap, lebih humanize dibanding hitam pekat */
     }
 
-    /* === MENGHILANGKAN WARNA UNGU/MERAH BAWAAN STREAMLIT === */
-    /* Ini yang bikin kotak teks dan tombol jadi aneh saat diklik */
+    /* === MENGHILANGKAN WARNA UNGU/PINK BAWAAN STREAMLIT === */
     *:focus {
         outline: none !important;
     }
     div[data-baseweb="input"]:focus-within, 
     div[data-baseweb="textarea"]:focus-within {
         border-color: #14B8A6 !important; /* Warna Teal Modern */
-        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2) !important;
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1) !important;
     }
 
-    /* === KOTAK INPUT TEKS === */
+    /* === KOTAK INPUT TEKS (LIGHT MODE) === */
     .stTextArea > div {
         border-radius: 16px !important;
         background-color: transparent !important;
     }
     .stTextArea textarea {
         border-radius: 16px !important; 
-        border: 1px solid #333333 !important; /* Abu-abu gelap */
-        background-color: #121212 !important; /* Hitam */
-        color: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important; /* Abu-abu muda */
+        background-color: #FFFFFF !important; /* Putih */
+        color: #1F2937 !important;
         font-size: 15px;
         padding: 16px;
         transition: all 0.2s ease;
@@ -49,22 +49,22 @@ st.markdown("""
     /* Warna saat kotak teks sedang diketik */
     .stTextArea textarea:focus {
         border-color: #14B8A6 !important;
-        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2) !important;
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1) !important;
     }
 
     /* Label Input Teks */
     .stTextArea label {
         font-weight: 600 !important;
-        color: #A3A3A3 !important; /* Abu-abu terang agar terbaca di dark mode */
+        color: #374151 !important; 
         font-size: 16px !important;
         margin-bottom: 8px !important;
     }
 
-    /* === TOMBOL === */
-    /* Tombol Utama (Primary) - Warna Teal */
+    /* === TOMBOL (LIGHT MODE) === */
+    /* Tombol Utama (Primary) - Warna Teal Solid */
     .stButton>button[kind="primary"] {
         background-color: #14B8A6 !important;
-        color: #000000 !important; /* Teks hitam agar kontras dengan background Teal */
+        color: #FFFFFF !important; /* Teks putih agar kontras dengan Teal */
         border: none !important;
         border-radius: 14px !important;
         height: 52px;
@@ -72,18 +72,18 @@ st.markdown("""
         font-size: 16px;
         letter-spacing: 0.3px;
         transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15) !important;
+        box-shadow: 0 3px 8px rgba(20, 184, 166, 0.1) !important;
     }
     .stButton>button[kind="primary"]:hover {
         background-color: #0D9488 !important; /* Teal lebih gelap saat di-hover */
         transform: translateY(-2px);
     }
 
-    /* Tombol Sekunder (Secondary) - Warna Hitam/Abu-abu */
+    /* Tombol Sekunder (Secondary) - Warna Putih/Abu-abu Bersih */
     .stButton>button[kind="secondary"] {
-        background-color: #1A1A1A !important;
-        color: #FFFFFF !important;
-        border: 1px solid #333333 !important;
+        background-color: #FFFFFF !important;
+        color: #1F2937 !important;
+        border: 1px solid #E5E7EB !important;
         border-radius: 14px !important;
         height: 52px;
         font-weight: 600 !important;
@@ -93,16 +93,16 @@ st.markdown("""
     .stButton>button[kind="secondary"]:hover {
         border-color: #14B8A6 !important;
         color: #14B8A6 !important;
+        background-color: #F9FAFB !important; /* Abu-abu sangat muda */
     }
 
     /* Fokus pada tombol agar tidak jadi pink/ungu */
     .stButton>button:focus {
-        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.4) !important;
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3) !important;
         border-color: #14B8A6 !important;
-        color: #14B8A6 !important;
     }
 
-    /* === KARTU FLASHCARD HITAM === */
+    /* === KARTU FLASHCARD PUTIH (LIGHT MODE) === */
     .vocab-card {
         padding: 40px 25px;
         border-radius: 24px; 
@@ -115,11 +115,11 @@ st.markdown("""
         align-items: center;
     }
 
-    /* Kartu Depan (Hitam Pekat) */
+    /* Kartu Depan (Putih Bersih dengan Shadow Halus) */
     .card-front {
-        background-color: #121212;
-        border: 1px solid #2A2A2A;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+        background-color: #FFFFFF;
+        border: 1px solid #F3F4F6;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.03); /* Bayangan sangat tipis agar terlihat premium */
     }
     .word-title { 
         font-size: 42px; 
@@ -127,7 +127,7 @@ st.markdown("""
         margin-bottom: 8px; 
         text-transform: capitalize; 
         letter-spacing: -1px;
-        color: #FFFFFF;
+        color: #1F2937;
     }
     .word-phonetic { 
         font-size: 17px; 
@@ -136,15 +136,15 @@ st.markdown("""
         letter-spacing: 1px;
     }
 
-    /* Kartu Belakang (Hitam dengan Garis Teal) */
+    /* Kartu Belakang (Putih dengan Garis Teal Tipis) */
     .card-back {
-        background-color: #0A0A0A; /* Hitam yang sedikit berbeda */
-        border: 1px solid #14B8A6; /* Garis aksen Teal */
-        box-shadow: 0 8px 32px rgba(20, 184, 166, 0.08);
+        background-color: #FFFFFF; 
+        border: 1px solid #14B8A6; /* Garis aksen Teal mengelilingi kartu */
+        box-shadow: 0 8px 32px rgba(20, 184, 166, 0.05);
     }
     .word-label { 
         font-size: 12px; 
-        color: #737373; 
+        color: #6B7280; /* Abu-abu muted */
         font-weight: 700;
         letter-spacing: 2px; 
         margin-bottom: 25px; 
@@ -155,12 +155,12 @@ st.markdown("""
         font-weight: 600; 
         margin-bottom: 20px; 
         line-height: 1.5;
-        color: #FFFFFF;
+        color: #1F2937;
     }
     .word-example { 
         font-size: 15px; 
         font-style: italic; 
-        color: #A3A3A3; 
+        color: #4B5563; /* Abu-abu sedikit lebih gelap */
         max-width: 90%;
         line-height: 1.5;
     }
@@ -171,17 +171,17 @@ st.markdown("""
         background-color: #14B8A6 !important;
         border-radius: 10px;
     }
-    /* Peringatan & Status */
+    /* Peringatan & Status (Lebih Humanize) */
     .stAlert {
         border-radius: 12px;
-        background-color: #1A1A1A !important;
-        border: 1px solid #333333 !important;
-        color: #FFFFFF !important;
+        background-color: #F9FAFB !important;
+        border: 1px solid #E5E7EB !important;
+        color: #1F2937 !important;
     }
-    /* Memastikan teks biasa terlihat cerah di dark mode */
-    h1 { font-weight: 800; letter-spacing: -1.5px; color: #FFFFFF; }
-    h2, h3 { font-weight: 700; color: #FFFFFF; }
-    p { color: #D4D4D4; }
+    /* Memastikan teks biasa terlihat nyaman di light mode */
+    h1 { font-weight: 800; letter-spacing: -1.5px; color: #1F2937; }
+    h2, h3 { font-weight: 700; color: #1F2937; }
+    p { color: #4B5563; }
 </style>
 """, unsafe_allow_html=True)
 
