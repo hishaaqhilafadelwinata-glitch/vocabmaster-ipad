@@ -3,14 +3,14 @@ import requests
 import random
 import re
 import time
-import google.generativeai as genai
+from deep_translator import GoogleTranslator
 
 # ==========================================
 # KONFIGURASI HALAMAN (Responsif untuk iPad)
 # ==========================================
 st.set_page_config(page_title="VocabMaster", page_icon="📚", layout="centered")
 
-# CSS Kustom agar tombol dan kartu lebih enak disentuh (Touch-friendly UI)
+# CSS Kustom
 st.markdown("""
 <style>
     .stButton>button {
@@ -46,7 +46,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# INISIALISASI STATE (Manajemen Memori App)
+# INISIALISASI STATE
 # ==========================================
 if 'app_state' not in st.session_state:
     st.session_state.app_state = 'input'
@@ -69,7 +69,7 @@ def extract_words(text):
     return list(dict.fromkeys(words))
 
 def fetch_definition(word):
-    result = {"word": word, "pronunciation": "", "definition_en": "(Definisi tidak ditemukan)", "example": ""}
+    result = {"word": word, "pronunciation": "", "definition_id": "(Definisi tidak ditemukan)", "example": ""}
     try:
         resp = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}", timeout=5)
         if resp.status_code == 200:
@@ -81,8 +81,15 @@ def fetch_definition(word):
             meanings = data.get("meanings", [])
             if meanings and meanings[0].get("definitions"):
                 d = meanings[0]["definitions"][0]
-                result["definition_en"] = d.get("definition", "")
+                def_en = d.get("definition", "")
                 result["example"] = d.get("example", "")
+                
+                # Terjemahkan ke Bahasa Indonesia
+                if def_en:
+                    try:
+                        result["definition_id"] = GoogleTranslator(source='en', target='id').translate(def_en)
+                    except Exception:
+                        result["definition_id"] = def_en
     except Exception:
         pass
     return result
@@ -108,7 +115,7 @@ if st.session_state.app_state == 'input':
             if not words:
                 st.error("Tidak ada kata bahasa Inggris yang valid ditemukan.")
             else:
-                with st.spinner(f"Memproses {len(words)} kata..."):
+                with st.spinner(f"Memproses {len(words)} kata & menerjemahkan..."):
                     word_data_list = []
                     for w in words:
                         word_data_list.append(fetch_definition(w))
@@ -143,7 +150,7 @@ elif st.session_state.app_state == 'study':
         st.markdown(f"""
         <div class="card-back">
             <div style="font-size: 14px; margin-bottom: 20px; color: #E0E3FF;">✦ ARTI KATA ✦</div>
-            <div class="word-meaning">{current_word['definition_en']}</div>
+            <div class="word-meaning">{current_word['definition_id']}</div>
             <div class="word-example">"{current_word['example']}"</div>
         </div>
         """, unsafe_allow_html=True)
@@ -187,8 +194,8 @@ elif st.session_state.app_state == 'quiz':
     current_q = words[q_idx]
     
     st.progress((q_idx) / total_q, text=f"Soal {q_idx + 1} / {total_q}")
-    st.subheader("Apa kata yang tepat untuk definisi ini?")
-    st.info(current_q['definition_en'])
+    st.subheader("Apa kata yang tepat untuk arti ini?")
+    st.info(current_q['definition_id'])
     
     if 'quiz_options' not in st.session_state or st.session_state.quiz_idx != st.session_state.get('last_q_idx', -1):
         others = [w['word'] for w in words if w['word'] != current_q['word']]
