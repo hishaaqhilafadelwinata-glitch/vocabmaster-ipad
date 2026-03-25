@@ -8,9 +8,10 @@ from deep_translator import GoogleTranslator
 # ==========================================
 # KONFIGURASI HALAMAN
 # ==========================================
+# Menghapus page_icon yang menggunakan emoji
 st.set_page_config(page_title="VocabMaster", layout="centered")
 
-# CSS Kustom: Modern Light Mode & Modern Font
+# CSS Kustom: Murni Minimalis & Bersih
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
@@ -92,7 +93,7 @@ st.markdown("""
         margin-bottom: 5px !important;
         background-color: #F3F4F6 !important;
         color: #4B5563 !important;
-        border: 1px dashed #D1D5DB !important;
+        border: 1px solid #E5E7EB !important; /* Dibuat solid abu-abu, bukan dashed */
     }
     .history-btn button:hover {
         border-color: #14B8A6 !important;
@@ -188,7 +189,8 @@ COMMON_WORDS = {
     "someone", "something", "somewhere", "still", "their", "theirs", "themselves", "there", "therefore", 
     "these", "thing", "think", "those", "though", "through", "throughout", "together", "under", "until", 
     "whatever", "whenever", "where", "whether", "which", "while", "whoever", "whole", "whose", "within", 
-    "without", "would", "yours", "yourself", "yourselves", "found", "using", "makes", "takes", "gives"
+    "without", "would", "yours", "yourself", "yourselves", "found", "using", "makes", "takes", "gives",
+    "there", "where", "which", "whose", "while", "these", "those"
 }
 
 # ==========================================
@@ -220,7 +222,8 @@ def extract_words(text, max_words):
     filtered_words = [w for w in unique_words if w not in COMMON_WORDS]
     filtered_words.sort(key=len, reverse=True)
     
-    top_complex = filtered_words[:40]
+    # Memperluas jangkauan ke 200 kata terumit
+    top_complex = filtered_words[:200]
     random.shuffle(top_complex)
     
     return top_complex[:max_words]
@@ -263,7 +266,7 @@ def set_input_from_history(text):
 # ==========================================
 if st.session_state.app_state == 'input':
     st.title("VocabMaster")
-    st.write("Ubah teks bahasa Inggris menjadi kartu belajar modern.")
+    st.write("Ubah teks bahasa Inggris menjadi kartu belajar.")
     st.write("")
     
     text_input = st.text_area(
@@ -274,18 +277,19 @@ if st.session_state.app_state == 'input':
     )
     
     st.write("")
+    # Batas maksimal kata sekarang 200
     max_vocab = st.slider(
-        "🎯 Ingin belajar berapa kata dari teks ini?", 
-        min_value=5, max_value=30, value=10, step=1,
-        help="Sistem akan otomatis mencarikan kata-kata paling rumit/panjang dari teksmu."
+        "Jumlah kata yang ingin dipelajari:", 
+        min_value=5, max_value=200, value=20, step=1
     )
     
     if st.session_state.text_history:
-        st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 5px; margin-bottom: 5px; color:#6B7280;'>🕒 Riwayat Teks Sesi Ini:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 5px; margin-bottom: 5px; color:#6B7280;'>Riwayat Sesi Ini:</p>", unsafe_allow_html=True)
         for i, past_text in enumerate(st.session_state.text_history):
-            preview_text = past_text[:50] + "..." if len(past_text) > 50 else past_text
+            preview_text = past_text[:60] + "..." if len(past_text) > 60 else past_text
             st.markdown('<div class="history-btn">', unsafe_allow_html=True)
-            st.button(f"📄 {preview_text}", key=f"hist_{i}", on_click=set_input_from_history, args=(past_text,))
+            # Menghapus emoji dokumen
+            st.button(f"{preview_text}", key=f"hist_{i}", on_click=set_input_from_history, args=(past_text,))
             st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("")
@@ -304,7 +308,7 @@ if st.session_state.app_state == 'input':
                         st.session_state.text_history.pop(0)
                     st.session_state.text_history.append(text_input.strip())
                 
-                with st.spinner(f"Menerjemahkan {len(words)} kata tersulit untukmu..."):
+                with st.spinner(f"Memproses {len(words)} kata untuk Anda..."):
                     word_data_list = []
                     for w in words:
                         word_data_list.append(fetch_definition(w))
@@ -348,10 +352,11 @@ elif st.session_state.app_state == 'study':
         </div>
         """, unsafe_allow_html=True)
 
-    col_back, col_flip, col_next = st.columns([1, 2, 1])
+    # Mengubah rasio tombol agar teks "Sebelumnya" dan "Selanjutnya" muat
+    col_back, col_flip, col_next = st.columns([1, 1, 1])
     
     with col_back:
-        if st.button("←", type="secondary") and current_idx > 0:
+        if st.button("Sebelumnya", type="secondary") and current_idx > 0:
             st.session_state.card_idx -= 1
             st.session_state.is_flipped = False
             st.rerun()
@@ -362,7 +367,7 @@ elif st.session_state.app_state == 'study':
             st.rerun()
             
     with col_next:
-        if st.button("→", type="secondary") and current_idx < len(words) - 1:
+        if st.button("Selanjutnya", type="secondary") and current_idx < len(words) - 1:
             st.session_state.card_idx += 1
             st.session_state.is_flipped = False
             st.rerun()
