@@ -84,12 +84,7 @@ st.markdown("""
         color: #14B8A6 !important;
         background-color: #F9FAFB !important; 
     }
-    .stButton>button:focus {
-        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3) !important;
-        border-color: #14B8A6 !important;
-    }
 
-    /* CSS Khusus untuk tombol riwayat agar lebih kecil */
     .history-btn button {
         height: 40px !important;
         font-size: 14px !important;
@@ -181,6 +176,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
+# DAFTAR KATA UMUM YANG AKAN DIBUANG
+# ==========================================
+COMMON_WORDS = {
+    "about", "above", "after", "again", "against", "almost", "along", "already", "also", "although",
+    "always", "among", "another", "anyone", "anything", "around", "because", "become", "before", 
+    "behind", "being", "below", "beside", "between", "beyond", "could", "doing", "during", "either", 
+    "enough", "everyone", "everything", "everywhere", "except", "first", "further", "great", "herself", 
+    "himself", "however", "itself", "little", "might", "myself", "never", "nothing", "nowhere", 
+    "other", "ourselves", "please", "quite", "rather", "really", "right", "second", "shall", "should", 
+    "someone", "something", "somewhere", "still", "their", "theirs", "themselves", "there", "therefore", 
+    "these", "thing", "think", "those", "though", "through", "throughout", "together", "under", "until", 
+    "whatever", "whenever", "where", "whether", "which", "while", "whoever", "whole", "whose", "within", 
+    "without", "would", "yours", "yourself", "yourselves", "found", "using", "makes", "takes", "gives"
+}
+
+# ==========================================
 # INISIALISASI STATE
 # ==========================================
 if 'app_state' not in st.session_state:
@@ -195,19 +206,33 @@ if 'quiz_score' not in st.session_state:
     st.session_state.quiz_score = 0
 if 'quiz_idx' not in st.session_state:
     st.session_state.quiz_idx = 0
-
 if 'text_history' not in st.session_state:
     st.session_state.text_history = []
-# Inisialisasi KUNCI WIDGET agar tidak error di awal
 if 'input_text_widget' not in st.session_state:
     st.session_state.input_text_widget = ""
 
 # ==========================================
 # FUNGSI PEMBANTU
 # ==========================================
-def extract_words(text):
-    words = [w.lower() for w in re.findall(r"[a-zA-Z]{4,}", text)]
-    return list(dict.fromkeys(words))
+def extract_words(text, max_words):
+    # 1. Ambil kata yang hurufnya minimal 5 (Otomatis membuang kata ganti/artikel pendek)
+    words = [w.lower() for w in re.findall(r"[a-zA-Z]{5,}", text)]
+    
+    # 2. Hapus duplikat
+    unique_words = list(dict.fromkeys(words))
+    
+    # 3. Filter membuang kata-kata keseharian (Common Words)
+    filtered_words = [w for w in unique_words if w not in COMMON_WORDS]
+    
+    # 4. Urutkan berdasarkan panjang kata (Heuristik: kata panjang = kata advance)
+    filtered_words.sort(key=len, reverse=True)
+    
+    # 5. Ambil 30 kata paling rumit, lalu acak, lalu potong sesuai permintaan pengguna
+    # (Diacak agar kalau teksnya sama, kata yang dipelajari bisa bervariasi)
+    top_complex = filtered_words[:40]
+    random.shuffle(top_complex)
+    
+    return top_complex[:max_words]
 
 def fetch_definition(word):
     result = {"word": word, "pronunciation": "", "definition_id": "(Definisi tidak ditemukan)", "example": ""}
@@ -240,7 +265,6 @@ def change_state(new_state):
         st.session_state.is_flipped = False
 
 def set_input_from_history(text):
-    # KUNCI PERBAIKAN: Memaksa widget kotak teks untuk langsung berubah
     st.session_state.input_text_widget = text
 
 # ==========================================
@@ -251,7 +275,6 @@ if st.session_state.app_state == 'input':
     st.write("Ubah teks bahasa Inggris menjadi kartu belajar modern.")
     st.write("")
     
-    # Kotak Input sekarang menggunakan 'key' agar bisa dikontrol lewat tombol
     text_input = st.text_area(
         "Masukkan Teks Bahasa Inggris", 
         height=200, 
@@ -259,8 +282,16 @@ if st.session_state.app_state == 'input':
         placeholder="Ketik atau tempel paragraf, kalimat, atau daftar kata di sini..."
     )
     
+    # SLIDER KENDALI JUMLAH KATA (Baru!)
+    st.write("")
+    max_vocab = st.slider(
+        "🎯 Ingin belajar berapa kata dari teks ini?", 
+        min_value=5, max_value=30, value=10, step=1,
+        help="Sistem akan otomatis mencarikan kata-kata paling rumit/panjang dari teksmu."
+    )
+    
     if st.session_state.text_history:
-        st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color:#6B7280;'>🕒 Riwayat Teks Sesi Ini:</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 14px; font-weight: 600; margin-top: 5px; margin-bottom: 5px; color:#6B7280;'>🕒 Riwayat Teks Sesi Ini:</p>", unsafe_allow_html=True)
         for i, past_text in enumerate(st.session_state.text_history):
             preview_text = past_text[:50] + "..." if len(past_text) > 50 else past_text
             st.markdown('<div class="history-btn">', unsafe_allow_html=True)
@@ -270,165 +301,3 @@ if st.session_state.app_state == 'input':
     st.write("")
 
     if st.button("Buat Kartu Belajar", type="primary"):
-        if not text_input.strip():
-            st.warning("Silakan masukkan teks terlebih dahulu.")
-        else:
-            words = extract_words(text_input)
-            if not words:
-                st.error("Tidak ada kata bahasa Inggris yang valid ditemukan (minimal 4 huruf).")
-            else:
-                if text_input.strip() not in st.session_state.text_history:
-                    if len(st.session_state.text_history) >= 5:
-                        st.session_state.text_history.pop(0)
-                    st.session_state.text_history.append(text_input.strip())
-                
-                with st.spinner(f"Menerjemahkan {len(words)} kosakata..."):
-                    word_data_list = []
-                    for w in words:
-                        word_data_list.append(fetch_definition(w))
-                        time.sleep(0.05)
-                    
-                    st.session_state.words_data = word_data_list
-                    st.session_state.card_idx = 0
-                    st.session_state.is_flipped = False
-                    change_state('study')
-                    st.rerun()
-
-# ==========================================
-# LAYAR 2: BELAJAR (FLASHCARD)
-# ==========================================
-elif st.session_state.app_state == 'study':
-    st.button("Kembali ke Beranda", type="secondary", on_click=change_state, args=('input',))
-    
-    words = st.session_state.words_data
-    current_idx = st.session_state.card_idx
-    current_word = words[current_idx]
-    
-    st.write("")
-    st.progress((current_idx + 1) / len(words))
-    st.write("") 
-    st.caption(f"Kartu {current_idx + 1} dari {len(words)}")
-    
-    if not st.session_state.is_flipped:
-        st.markdown(f"""
-        <div class="vocab-card card-front">
-            <div class="word-title">{current_word['word']}</div>
-            <div class="word-phonetic">{current_word['pronunciation']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        example_text = f'"{current_word["example"]}"' if current_word["example"] else ""
-        st.markdown(f"""
-        <div class="vocab-card card-back">
-            <div class="word-label">ARTI KATA</div>
-            <div class="word-meaning">{current_word['definition_id']}</div>
-            <div class="word-example">{example_text}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    col_back, col_flip, col_next = st.columns([1, 2, 1])
-    
-    with col_back:
-        if st.button("←", type="secondary") and current_idx > 0:
-            st.session_state.card_idx -= 1
-            st.session_state.is_flipped = False
-            st.rerun()
-            
-    with col_flip:
-        if st.button("Balik Kartu", type="primary"):
-            st.session_state.is_flipped = not st.session_state.is_flipped
-            st.rerun()
-            
-    with col_next:
-        if st.button("→", type="secondary") and current_idx < len(words) - 1:
-            st.session_state.card_idx += 1
-            st.session_state.is_flipped = False
-            st.rerun()
-            
-    st.write("")
-    st.write("")
-    st.divider()
-    st.subheader("Uji Kemampuan")
-    st.write("Coba kuis singkat berdasarkan kartu yang Anda pelajari.")
-    st.write("")
-    if st.button("Mulai Kuis", type="primary"):
-        st.session_state.quiz_idx = 0
-        st.session_state.quiz_score = 0
-        random.shuffle(st.session_state.words_data)
-        change_state('quiz')
-        st.rerun()
-
-# ==========================================
-# LAYAR 3: QUIZ
-# ==========================================
-elif st.session_state.app_state == 'quiz':
-    st.button("Hentikan Kuis", type="secondary", on_click=change_state, args=('study',))
-    
-    words = st.session_state.words_data
-    total_q = len(words)
-    q_idx = st.session_state.quiz_idx
-    current_q = words[q_idx]
-    
-    st.write("")
-    st.progress((q_idx) / total_q)
-    st.write("")
-    st.caption(f"Soal {q_idx + 1} / {total_q}")
-    
-    st.write("")
-    st.write("Apa kata bahasa Inggris yang tepat untuk arti ini?")
-    st.info(current_q['definition_id'])
-    
-    if 'quiz_options' not in st.session_state or st.session_state.quiz_idx != st.session_state.get('last_q_idx', -1):
-        others = [w['word'] for w in words if w['word'] != current_q['word']]
-        wrong_choices = random.sample(others, min(1, len(others))) if others else ["unknown"]
-        options = [current_q['word']] + wrong_choices
-        random.shuffle(options)
-        st.session_state.quiz_options = options
-        st.session_state.last_q_idx = q_idx
-
-    answer = st.radio("Pilih jawaban:", st.session_state.quiz_options, index=None, label_visibility="collapsed")
-    
-    st.write("")
-    if st.button("Cek Jawaban", type="primary") and answer:
-        if answer == current_q['word']:
-            st.success("Benar.")
-            st.session_state.quiz_score += 1
-        else:
-            st.error(f"Kurang tepat. Jawaban yang benar: {current_q['word']}")
-            
-        time.sleep(1.2)
-        
-        if q_idx < total_q - 1:
-            st.session_state.quiz_idx += 1
-        else:
-            change_state('result')
-        st.rerun()
-
-# ==========================================
-# LAYAR 4: HASIL
-# ==========================================
-elif st.session_state.app_state == 'result':
-    total = len(st.session_state.words_data)
-    score = st.session_state.quiz_score
-    
-    st.title("Hasil Kuis")
-    st.write("")
-    
-    col_s, col_a = st.columns(2)
-    col_s.metric("Skor", f"{score} / {total}")
-    col_a.metric("Akurasi", f"{int((score/total)*100)}%")
-    
-    st.divider()
-    
-    st.write("")
-    col_ulang, col_home = st.columns(2)
-    with col_ulang:
-        if st.button("Ulangi Kuis", type="primary"):
-            st.session_state.quiz_idx = 0
-            st.session_state.quiz_score = 0
-            change_state('quiz')
-            st.rerun()
-    with col_home:
-        if st.button("Menu Utama", type="secondary"):
-            change_state('input')
-            st.rerun()
